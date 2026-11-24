@@ -53,6 +53,13 @@ def buscar_duplicados(carpeta):
     repetidos = [lista for lista in grupos.values() if len(lista) > 1]
     return repetidos, revisados
 
+def ordenar_grupos(duplicados):
+    """Ordena los grupos según el espacio que desperdician."""
+    duplicados.sort(
+        key=lambda grupo: grupo[0].stat().st_size * (len(grupo) - 1),
+        reverse=True
+    )
+    return duplicados
 
 def tamano_legible(bytes_):
     """Convierte bytes a KB, MB o GB para que se lea fácil."""
@@ -64,16 +71,23 @@ def tamano_legible(bytes_):
 
 
 def mostrar_resultados(duplicados):
-    """Muestra cada grupo de copias y devuelve cuántas sobran y cuánto ocupan."""
+    """Muestra los grupos ordenados y cuánto espacio desperdician."""
     sobrantes = 0
     espacio = 0
+
     for numero, grupo in enumerate(duplicados, start=1):
-        print(f"Grupo {numero}: {len(grupo)} copias idénticas")
+        tamano = grupo[0].stat().st_size
+        espacio_grupo = tamano * (len(grupo) - 1)
+
+        print(f"Grupo {numero}: {len(grupo)} copias idénticas "
+              f"(sobran {tamano_legible(espacio_grupo)})")
+
         for archivo in grupo:
             print(f"   - {archivo}")
-        # Se conserva 1 copia; las demás son espacio desperdiciado
+
         sobrantes += len(grupo) - 1
-        espacio += grupo[0].stat().st_size * (len(grupo) - 1)
+        espacio += espacio_grupo
+
     return sobrantes, espacio
 
 
@@ -85,6 +99,7 @@ if __name__ == "__main__":
     print(f"Buscando duplicados en '{CARPETA}'...\n")
     inicio = time.time()
     duplicados, revisados = buscar_duplicados(CARPETA)
+    duplicados = ordenar_grupos(duplicados)
     sobrantes, espacio = mostrar_resultados(duplicados)
     segundos = time.time() - inicio
 
