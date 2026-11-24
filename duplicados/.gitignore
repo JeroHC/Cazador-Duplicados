@@ -1,0 +1,8 @@
+# Carpeta que crea el script de prueba: no se sube a GitHub
+fotos_de_prueba/
+
+# Reportes que genera el programa
+reporte.csv
+
+# Archivos que crea Python al ejecutar
+__pycache__/
